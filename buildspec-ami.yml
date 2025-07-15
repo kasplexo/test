@@ -1,0 +1,14 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - yum install -y jq
+  build:
+    commands:
+      - version=$(aws ssm get-parameter --name "version" --query Parameter.Value | tr -d '"')
+      - version=$(($version+1))
+      - aws ssm put-parameter --name "version" --type "String" --value "$version" --overwrite
+
+      - ami_id=$(aws ec2 create-image --instance-id i-05350b45c06dbb918 --name "second-api" --no-reboot | jq -r '.ImageId')
+      - aws ssm put-parameter --name "ami_id" --type "String" --value "$ami_id" --overwrite
